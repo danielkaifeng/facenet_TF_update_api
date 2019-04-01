@@ -1,0 +1,7 @@
+arguments: train_tripletloss.py --data_dir ../../dataset/lfw
+--------------------
+tensorflow version: 1.12.0
+--------------------
+git hash: b''
+--------------------
+b''

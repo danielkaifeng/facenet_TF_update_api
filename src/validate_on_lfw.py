@@ -1,40 +1,16 @@
-"""Validate a face recognizer on the "Labeled Faces in the Wild" dataset (http://vis-www.cs.umass.edu/lfw/).
-Embeddings are calculated using the pairs from http://vis-www.cs.umass.edu/lfw/pairs.txt and the ROC curve
-is calculated and plotted. Both the model metagraph and the model parameters need to exist
-in the same directory, and the metagraph should have the extension '.meta'.
-"""
-# MIT License
-# 
-# Copyright (c) 2016 David Sandberg
-# 
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-# 
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-# 
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
-
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
+
+import os
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '1'
+os.environ["CUDA_VISIBLE_DEVICES"] = "4"
 
 import tensorflow as tf
 import numpy as np
 import argparse
 import facenet
 import lfw
-import os
 import sys
 from tensorflow.python.ops import data_flow_ops
 from sklearn import metrics
@@ -42,11 +18,8 @@ from scipy.optimize import brentq
 from scipy import interpolate
 
 def main(args):
-  
     with tf.Graph().as_default():
-      
         with tf.Session() as sess:
-            
             # Read the file containing the pairs used for testing
             pairs = lfw.read_pairs(os.path.expanduser(args.lfw_pairs))
 
@@ -70,6 +43,7 @@ def main(args):
      
             # Load the model
             input_map = {'image_batch': image_batch, 'label_batch': label_batch, 'phase_train': phase_train_placeholder}
+			#加载模型文件，自动判断是属于checkpoint文件类型还是pb文件
             facenet.load_model(args.model, input_map=input_map)
 
             # Get output tensor
@@ -141,13 +115,13 @@ def parse_arguments(argv):
     parser.add_argument('lfw_dir', type=str,
         help='Path to the data directory containing aligned LFW face patches.')
     parser.add_argument('--lfw_batch_size', type=int,
-        help='Number of images to process in a batch in the LFW test set.', default=100)
+        help='Number of images to process in a batch in the LFW test set.', default=10)
     parser.add_argument('model', type=str, 
         help='Could be either a directory containing the meta_file and ckpt_file or a model protobuf (.pb) file')
     parser.add_argument('--image_size', type=int,
         help='Image size (height, width) in pixels.', default=160)
     parser.add_argument('--lfw_pairs', type=str,
-        help='The file containing the pairs to use for validation.', default='data/pairs.txt')
+        help='The file containing the pairs to use for validation.', default='../data/pairs.txt')
     parser.add_argument('--lfw_nrof_folds', type=int,
         help='Number of folds to use for cross validation. Mainly used for testing.', default=10)
     parser.add_argument('--distance_metric', type=int,
